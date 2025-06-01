@@ -2,36 +2,40 @@ package org.example.state;
 
 import org.example.CliContext;
 import org.example.data.User;
+import org.example.data.UserDao;
 import org.example.util.CliMenu;
+import org.example.util.ErrorBase;
 import org.example.util.Expected;
 
 import java.util.List;
 
+import static org.example.util.MainMenuEntry.*;
+
 public class MainMenuState extends ContextfulCliState {
-    private final CliMenu<ProcessResult> menu;
+    private final CliMenu<Character, ProcessResult> menu;
 
-    public MainMenuState(CliContext context) {
+    public MainMenuState(CliContext context, CliMenu<Character, ProcessResult> menu) {
         super(context);
-        menu = new CliMenu<>();
+        this.menu = menu;
 
-        menu.addEntry('1', "Create new user", () -> {
+        menu.addEntry(CREATE.getKey(), CREATE.getText(), () -> {
             CreationState nextState = new CreationState(context);
             return new ProcessResult(nextState, nextState.getWelcomeMessage());
         });
-        menu.addEntry('2', "Print all users", this::printAllUsers);
-        menu.addEntry('3', "Get user by id", () -> {
+        menu.addEntry(PRINT_ALL.getKey(), PRINT_ALL.getText(), this::printAllUsers);
+        menu.addEntry(GET_BY_ID.getKey(), GET_BY_ID.getText(), () -> {
             SearchingState nextState = new SearchingState(context);
             return new ProcessResult(nextState, nextState.getWelcomeMessage());
         });
-        menu.addEntry('4', "Update user", () -> {
+        menu.addEntry(UPDATE.getKey(), UPDATE.getText(), () -> {
             UpdatingState nextState = new UpdatingState(context);
             return new ProcessResult(nextState, nextState.getWelcomeMessage());
         });
-        menu.addEntry('5', "Delete user", () -> {
+        menu.addEntry(DELETE.getKey(), DELETE.getText(), () -> {
             DeletionState nextState = new DeletionState(context);
             return new ProcessResult(nextState, nextState.getWelcomeMessage());
         });
-        menu.addEntry('0', "Exit", () -> {
+        menu.addEntry(EXIT.getKey(), EXIT.getText(), () -> {
             context.setExitFlag(true);
             return new ProcessResult("\nExiting...\n");
         });
@@ -39,22 +43,22 @@ public class MainMenuState extends ContextfulCliState {
 
     @Override
     public ProcessResult process(String input) {
-        Expected<ProcessResult, String> expected = menu.process(input);
+        Expected<ProcessResult, ErrorBase> expected = menu.process(input);
         if (expected.hasValue()) {
             return expected.value();
         }
-        return keepState(expected.error());
+        return keepState(expected.error().toString());
     }
 
     @Override
     public String getWelcomeMessage() {
-        return menu.buildMenuString();
+        return menu.toString();
     }
 
     public ProcessResult printAllUsers() {
-        Expected<List<User>, String> expected = context.getUserDao().findAll();
+        Expected<List<User>, UserDao.Error> expected = context.getUserDao().findAll();
         if (!expected.hasValue()) {
-            return keepState(expected.error());
+            return keepState(expected.error().toString());
         }
 
         StringBuilder builder = new StringBuilder();

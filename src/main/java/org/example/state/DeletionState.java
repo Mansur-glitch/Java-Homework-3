@@ -1,8 +1,10 @@
 package org.example.state;
 
 import org.example.CliContext;
+import org.example.data.UserDao;
 import org.example.util.Expected;
 import org.example.util.InputVerifier;
+import org.example.util.SimpleMenu;
 
 public class DeletionState extends ContextfulCliState {
     public DeletionState(CliContext context) {
@@ -11,19 +13,19 @@ public class DeletionState extends ContextfulCliState {
 
     @Override
     public ProcessResult process(String input) {
-        Expected<Integer, String> expectedId = InputVerifier.parseId(input);
+        Expected<Integer, InputVerifier.Error> expectedId = InputVerifier.parseId(input);
         if (!expectedId.hasValue()) {
-            return keepState(expectedId.error());
+            return keepState(expectedId.error().toString());
         }
 
         if (expectedId.value() == 0) {
-            MainMenuState mainMenuState = new MainMenuState(context);
+            MainMenuState mainMenuState = new MainMenuState(context, new SimpleMenu<>());
             return new ProcessResult(mainMenuState, mainMenuState.getWelcomeMessage());
         }
 
-        Expected<Void, String> expectedUser = context.getUserDao().deleteById(expectedId.value());
+        Expected<Void, UserDao.Error> expectedUser = context.getUserDao().deleteById(expectedId.value());
         if (!expectedUser.hasValue()) {
-            return keepState(expectedUser.error());
+            return keepState(expectedUser.error().toString());
         }
 
         return keepState("User with specified id successfully deleted!");

@@ -1,5 +1,6 @@
 package org.example.data;
 
+import org.example.util.ErrorBase;
 import org.example.util.Expected;
 import org.example.util.LogUtility;
 import org.hibernate.Session;
@@ -8,13 +9,21 @@ import org.hibernate.SessionFactory;
 import java.util.List;
 
 public class UserDao {
+    public static class Error extends ErrorBase {
+        public static final Error USER_NOT_FOUND = new Error("User with specified id wasn't found!");
+
+        protected Error(String message) {
+            super(message);
+        }
+    }
+    
     private final SessionFactory sessionFactory;
 
     public UserDao(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
-    public Expected<Integer, String> create(User user) {
+    public Expected<Integer, Error> create(User user) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         try {
@@ -31,7 +40,7 @@ public class UserDao {
         return Expected.ofValue(user.getId());
     }
 
-    public Expected<List<User>, String> findAll() {
+    public Expected<List<User>, Error> findAll() {
         Session session = sessionFactory.openSession();
         List<User> users;
         users = session.createSelectionQuery("From User", User.class)
@@ -41,25 +50,25 @@ public class UserDao {
         return Expected.ofValue(users);
     }
 
-    public Expected<User, String> getById(int id) {
+    public Expected<User, Error> getById(int id) {
         Session session = sessionFactory.openSession();
         User user = session.find(User.class, id);
         session.close();
         if (user == null) {
             LogUtility.logger().info("User with %d id wasn't found".formatted(id));
-            return Expected.ofError("User with specified id wasn't found!");
+            return Expected.ofError(Error.USER_NOT_FOUND);
         }
         LogUtility.logger().info("User with %d id was retrieved".formatted(id));
         return Expected.ofValue(user);
     }
 
-    public Expected<User, String> update(User user) {
+    public Expected<User, Error> update(User user) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         try {
             User dbUser = session.find(User.class, user.getId());
             if (dbUser == null) {
-                return Expected.ofError("User with specified id wasn't found!");
+                return Expected.ofError(Error.USER_NOT_FOUND);
             }
             if (user.getName() != null) {
                 dbUser.setName(user.getName());
@@ -82,14 +91,14 @@ public class UserDao {
         }
     }
 
-    public Expected<Void, String> deleteById(int id) {
+    public Expected<Void, Error> deleteById(int id) {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
         try {
             User user = session.find(User.class, id);
             if (user == null) {
                 session.getTransaction().rollback();
-                return Expected.ofError("User with specified id wasn't found!");
+                return Expected.ofError(Error.USER_NOT_FOUND);
             }
             session.remove(user);
             session.getTransaction().commit();

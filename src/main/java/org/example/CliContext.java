@@ -3,6 +3,7 @@ package org.example;
 import org.example.data.UserDao;
 import org.example.state.CliState;
 import org.example.state.MainMenuState;
+import org.example.util.SimpleMenu;
 import org.hibernate.SessionFactory;
 
 import java.util.Scanner;
@@ -14,7 +15,7 @@ public class CliContext {
     private boolean exitFlag;
 
     public CliContext(SessionFactory sessionFactory) {
-        MainMenuState mainMenuState = new MainMenuState(this);
+        MainMenuState mainMenuState = new MainMenuState(this, new SimpleMenu<>());
         System.out.println(mainMenuState.getWelcomeMessage());
 
         this.state = mainMenuState;

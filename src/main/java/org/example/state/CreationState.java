@@ -2,8 +2,10 @@ package org.example.state;
 
 import org.example.CliContext;
 import org.example.data.User;
+import org.example.data.UserDao;
 import org.example.util.Expected;
 import org.example.util.InputVerifier;
+import org.example.util.SimpleMenu;
 
 public class CreationState extends ContextfulCliState {
     protected final User blank;
@@ -24,33 +26,33 @@ public class CreationState extends ContextfulCliState {
     }
 
     public ProcessResult enterName(String input) {
-        Expected<String, String> expected = InputVerifier.parseUserName(input);
+        Expected<String, InputVerifier.Error> expected = InputVerifier.parseUserName(input);
         if (!expected.hasValue()) {
-            return new ProcessResult(expected.error());
+            return new ProcessResult(expected.error().toString());
         }
         blank.setName(expected.value());
         return new ProcessResult(this::enterAge, "Enter age:");
     }
 
     public ProcessResult enterAge(String input) {
-        Expected<Integer, String> expected = InputVerifier.parseUserAge(input);
+        Expected<Integer, InputVerifier.Error> expected = InputVerifier.parseUserAge(input);
         if (!expected.hasValue()) {
-            return new ProcessResult(expected.error());
+            return new ProcessResult(expected.error().toString());
         }
         blank.setAge(expected.value());
         return new ProcessResult(this::enterEmail, "Enter email:");
     }
 
     public ProcessResult enterEmail(String input) {
-        Expected<String, String> expectedEmail = InputVerifier.parseUserEmail(input);
+        Expected<String, InputVerifier.Error> expectedEmail = InputVerifier.parseUserEmail(input);
         if (!expectedEmail.hasValue()) {
-            return new ProcessResult(expectedEmail.error());
+            return new ProcessResult(expectedEmail.error().toString());
         }
         blank.setEmail(expectedEmail.value());
 
         Expected<String, String> expectedResponse = databaseAction(blank);
 
-        MainMenuState mainMenuState = new MainMenuState(context);
+        MainMenuState mainMenuState = new MainMenuState(context, new SimpleMenu<>());
         String textResponse = expectedResponse.hasValue() ?
                 expectedResponse.value() :
                 expectedResponse.error();
@@ -59,9 +61,9 @@ public class CreationState extends ContextfulCliState {
     }
 
     public Expected<String, String> databaseAction(User user) {
-        Expected<Integer, String> expected = context.getUserDao().create(user);
+        Expected<Integer, UserDao.Error> expected = context.getUserDao().create(user);
         if (!expected.hasValue()) {
-            return Expected.ofError(expected.error());
+            return Expected.ofError(expected.error().toString());
         }
         return Expected.ofValue("User with %d id successfully created!".formatted(expected.value()));
     }

@@ -2,8 +2,10 @@ package org.example.state;
 
 import org.example.CliContext;
 import org.example.data.User;
+import org.example.data.UserDao;
 import org.example.util.Expected;
 import org.example.util.InputVerifier;
+import org.example.util.SimpleMenu;
 
 public class UpdatingState extends CreationState {
     public UpdatingState(CliContext context) {
@@ -21,20 +23,20 @@ public class UpdatingState extends CreationState {
     }
 
     public ProcessResult enterId(String input) {
-        Expected<Integer, String> expectedId = InputVerifier.parseId(input);
+        Expected<Integer, InputVerifier.Error> expectedId = InputVerifier.parseId(input);
         if (!expectedId.hasValue()) {
-            return new ProcessResult(expectedId.error());
+            return new ProcessResult(expectedId.error().toString());
         }
         int id = expectedId.value();
 
         if (expectedId.value() == 0) {
-            MainMenuState mainMenuState = new MainMenuState(context);
+            MainMenuState mainMenuState = new MainMenuState(context, new SimpleMenu<>());
             return new ProcessResult(mainMenuState, mainMenuState.getWelcomeMessage());
         }
 
-        Expected<User, String> expectedUser = context.getUserDao().getById(id);
+        Expected<User, UserDao.Error> expectedUser = context.getUserDao().getById(id);
         if (!expectedUser.hasValue()) {
-            return keepState(expectedUser.error());
+            return keepState(expectedUser.error().toString());
         }
 
         blank.setId(id);
@@ -43,9 +45,9 @@ public class UpdatingState extends CreationState {
 
     @Override
     public Expected<String, String> databaseAction(User user) {
-        Expected<User, String> expected = context.getUserDao().update(user);
+        Expected<User, UserDao.Error> expected = context.getUserDao().update(user);
         if (!expected.hasValue()) {
-            return Expected.ofError(expected.error());
+            return Expected.ofError(expected.error().toString());
         }
         return Expected.ofValue("Updated %s".formatted(expected.value()));
     }
