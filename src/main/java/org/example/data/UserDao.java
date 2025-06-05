@@ -30,13 +30,13 @@ public class UserDao {
             session.persist(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            LogUtility.logger().severe("Failed to create new user with %d id".formatted(user.getId()));
+            LogUtility.getStaticLogger().severe("Failed to create new user with %d id".formatted(user.getId()));
             session.getTransaction().rollback();
-            throw new RuntimeException(e);
+            throw e;
         } finally {
             session.close();
         }
-        LogUtility.logger().info("User with %d id was created".formatted(user.getId()));
+        LogUtility.getStaticLogger().info("User with %d id was created".formatted(user.getId()));
         return Expected.ofValue(user.getId());
     }
 
@@ -46,7 +46,7 @@ public class UserDao {
         users = session.createSelectionQuery("From User", User.class)
                 .getResultList();
         session.close();
-        LogUtility.logger().info("%d entries were retrieved".formatted(users.size()));
+        LogUtility.getStaticLogger().info("%d entries were retrieved".formatted(users.size()));
         return Expected.ofValue(users);
     }
 
@@ -55,10 +55,10 @@ public class UserDao {
         User user = session.find(User.class, id);
         session.close();
         if (user == null) {
-            LogUtility.logger().info("User with %d id wasn't found".formatted(id));
+            LogUtility.getStaticLogger().info("User with %d id wasn't found".formatted(id));
             return Expected.ofError(Error.USER_NOT_FOUND);
         }
-        LogUtility.logger().info("User with %d id was retrieved".formatted(id));
+        LogUtility.getStaticLogger().info("User with %d id was retrieved".formatted(id));
         return Expected.ofValue(user);
     }
 
@@ -80,12 +80,12 @@ public class UserDao {
                 dbUser.setEmail(user.getEmail());
             }
             session.getTransaction().commit();
-            LogUtility.logger().info("User with %d id was updated".formatted(user.getId()));
+            LogUtility.getStaticLogger().info("User with %d id was updated".formatted(user.getId()));
             return Expected.ofValue(dbUser);
         } catch (Exception e) {
-            LogUtility.logger().severe("Failed to update user with %d id".formatted(user.getId()));
+            LogUtility.getStaticLogger().severe("Failed to update user with %d id".formatted(user.getId()));
             session.getTransaction().rollback();
-            throw new RuntimeException(e);
+            throw e;
         } finally {
             session.close();
         }
@@ -103,13 +103,13 @@ public class UserDao {
             session.remove(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            LogUtility.logger().severe("Failed to delete user with %d id".formatted(id));
+            LogUtility.getStaticLogger().severe("Failed to delete user with %d id".formatted(id));
             session.getTransaction().rollback();
-            throw new RuntimeException(e);
+            throw e;
         } finally {
             session.close();
         }
-        LogUtility.logger().info("User with %d id was deleted".formatted(id));
+        LogUtility.getStaticLogger().info("User with %d id was deleted".formatted(id));
         return Expected.ofValue(null);
     }
 }

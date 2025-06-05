@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "user_account")
@@ -16,12 +17,11 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    // May use RFC 5322 regex to validate email structure
-    @Column(name = "email")
-    private String email;
-
     @Column(name = "age")
     private int age = -1;
+
+    @Column(name = "email")
+    private String email;
 
     @UpdateTimestamp
     @Column(name = "created_at")
@@ -29,6 +29,30 @@ public class User {
 
     public User() {
 
+    }
+
+    public User(int id, String name, int age, String email) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.email = email;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, age, email, createdAt);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other == null) return false;
+        if (! (other instanceof User castedOther)) return false;
+        return this.id == castedOther.id
+                && Objects.equals(this.name, castedOther.name)
+                && this.age == castedOther.age
+                && Objects.equals(this.email, castedOther.email)
+                && Objects.equals(this.createdAt, castedOther.createdAt);
     }
 
     @Override

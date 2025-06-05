@@ -1,29 +1,50 @@
 package org.example.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.logging.ConsoleHandler;
+import java.io.InputStream;
 import java.util.logging.FileHandler;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public class LogUtility {
-    private static final Logger LOGGER = Logger.getLogger(LogUtility.class.getName());
-
+    private static final Logger LOGGER;
     static {
-        LOGGER.setUseParentHandlers(false);
+        String configString = """
+                handlers=java.util.logging.FileHandler
+                java.util.logging.FileHandler.formatter=java.util.logging.SimpleFormatter
+                java.util.logging.FileHandler.pattern=log.txt
+                java.util.logging.FileHandler.append=true
+                org.hibernate.level=WARNING
+                org.mockito.level=WARNING
+                """;
+        InputStream stream = new ByteArrayInputStream(configString.getBytes());
         try {
-            FileHandler fileHandler = new FileHandler("log.txt", true);
-            fileHandler.setFormatter(new SimpleFormatter());
-            LOGGER.addHandler(fileHandler);
+            LogManager.getLogManager().readConfiguration(stream);
         } catch (IOException e) {
-            System.err.printf("Failed to open log file. %s\n", e.getMessage());
-            System.err.println("Writing log to standard error stream.");
-            LOGGER.addHandler(new ConsoleHandler());
+            throw new RuntimeException(e);
         }
+        LOGGER = Logger.getLogger(LogUtility.class.getName());
     }
 
-    public static Logger logger() {
+    public static Logger getStaticLogger() {
         return LOGGER;
     }
 
+    public static Logger createLogger(String filename) {
+        Logger logger = Logger.getLogger(filename);
+        logger.setUseParentHandlers(false);
+
+        FileHandler fileHandler;
+        try {
+            fileHandler = new FileHandler(filename, false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        fileHandler.setFormatter(new SimpleFormatter());
+        logger.addHandler(fileHandler);
+
+        return logger;
+    }
 }

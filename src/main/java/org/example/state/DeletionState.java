@@ -28,7 +28,7 @@ public class DeletionState extends ContextfulCliState {
             return keepState(expectedUser.error().toString());
         }
 
-        return keepState("User with specified id successfully deleted!");
+        return keepState("User with %d id successfully deleted!".formatted(expectedId.value()));
     }
 
     @Override
