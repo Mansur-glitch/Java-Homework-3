@@ -1,72 +1,66 @@
+package org.example.state;
+
 import org.example.data.User;
 import org.example.data.UserDao;
-import org.example.state.CliState;
-import org.example.state.CreationState;
-import org.example.state.MainMenuState;
-import org.example.state.UpdatingState;
 import org.example.util.Expected;
 import org.example.util.InputVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-
 import static org.example.data.UserDao.Error.USER_NOT_FOUND;
 import static org.example.util.InputVerifier.Error.NOT_INTEGER_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verifyNoInteractions;
 
-public class UpdatingStateTests extends StateTestBase {
-    UpdatingState state;
-    Field blankField;
+public class SearchingStateTests extends StateTestBase {
+    SearchingState state;
 
     @Override
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
-        state = new UpdatingState(contextMock);
-        try {
-            blankField = CreationState.class.getDeclaredField("blank");
-            blankField.setAccessible(true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        state = new SearchingState(contextMock);
     }
 
+
     @Test
-    void enterId_correctInput() {
+    void process_correctInput() {
+        User testUser = new User(1, "testName", 1, "testEmail");
+
         Expected<Integer, InputVerifier.Error> parseResult = Expected.ofValue(1);
-        Expected<User, UserDao.Error> daoResult = Expected.ofValue(new User());
+        Expected<User, UserDao.Error> daoResult = Expected.ofValue(testUser);
 
         inputVerifierMock.when(() -> InputVerifier.parseId(any())).thenReturn(parseResult);
         doReturn(daoResult).when(userDaoMock).getById(anyInt());
 
-        CliState.ProcessResult result = state.enterId("");
+        CliState.ProcessResult result = state.process("");
 
         assertAll(
-                () -> assertNotNull(result.nextState()),
-                () -> assertEquals(1, ((User) blankField.get(state)).getId())
+                () -> assertNull(result.nextState()),
+                () -> assertTrue(result.textResponse().contains(testUser.toString()))
         );
     }
 
     @Test
-    void enterId_returnToMenu() {
+    void process_returnToMenu() {
         Expected<Integer, InputVerifier.Error> parseResult = Expected.ofValue(0);
         inputVerifierMock.when(() -> InputVerifier.parseId(any())).thenReturn(parseResult);
 
-        CliState.ProcessResult result = state.enterId("");
+        CliState.ProcessResult result = state.process("");
 
         assertEquals(MainMenuState.class, result.nextState().getClass());
         verifyNoInteractions(userDaoMock);
     }
 
     @Test
-    void enterId_invalidInput() {
+    void process_invalidInput() {
         Expected<Integer, InputVerifier.Error> parseResult = Expected.ofError(NOT_INTEGER_ID);
         inputVerifierMock.when(() -> InputVerifier.parseId(any())).thenReturn(parseResult);
 
-        CliState.ProcessResult result = state.enterId("");
+        CliState.ProcessResult result = state.process("");
 
         assertAll(
                 () -> assertNull(result.nextState()),
@@ -76,38 +70,18 @@ public class UpdatingStateTests extends StateTestBase {
     }
 
     @Test
-    void enterId_daoFails() {
+    void process_daoFails() {
         Expected<Integer, InputVerifier.Error> parseResult = Expected.ofValue(1);
         Expected<User, UserDao.Error> daoResult = Expected.ofError(USER_NOT_FOUND);
 
         inputVerifierMock.when(() -> InputVerifier.parseId(any())).thenReturn(parseResult);
         doReturn(daoResult).when(userDaoMock).getById(anyInt());
 
-        CliState.ProcessResult result = state.enterId("");
+        CliState.ProcessResult result = state.process("");
 
         assertAll(
                 () -> assertNull(result.nextState()),
                 () -> assertTrue(result.textResponse().contains(USER_NOT_FOUND.toString()))
         );
-    }
-
-    @Test
-    void databaseAction_returnsValue() {
-        Expected<Integer, UserDao.Error> daoResult = Expected.ofValue(1);
-        doReturn(daoResult).when(userDaoMock).update(any());
-
-        Expected<String, String> result = state.databaseAction(new User());
-
-        assertTrue(result.hasValue());
-    }
-
-    @Test
-    void databaseAction_returnsError() {
-        Expected<Integer, UserDao.Error> daoResult = Expected.ofError(USER_NOT_FOUND);
-        doReturn(daoResult).when(userDaoMock).update(any());
-
-        Expected<String, String> result = state.databaseAction(new User());
-
-        assertFalse(result.hasValue());
     }
 }

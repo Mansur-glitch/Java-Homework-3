@@ -1,8 +1,8 @@
+package org.example.state;
+
 import org.example.CliContext;
 import org.example.data.User;
 import org.example.data.UserDao;
-import org.example.state.CliState;
-import org.example.state.MainMenuState;
 import org.example.util.CliMenu;
 import org.example.util.ErrorBase;
 import org.example.util.Expected;
@@ -19,12 +19,14 @@ import static org.example.util.MainMenuEntry.EXIT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class MainMenuStateTests extends StateTestBase{
+public class MainMenuStateTests extends StateTestBase {
     CliMenu<Character, CliState.ProcessResult> menuMock;
     MainMenuState state;
 
+    @Override
     @BeforeEach
-    void reset() {
+    protected void beforeEach() {
+        super.beforeEach();
         menuMock = mock();
         state = new MainMenuState(contextMock, menuMock);
     }

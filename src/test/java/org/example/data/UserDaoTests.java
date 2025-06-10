@@ -1,5 +1,7 @@
-import org.example.data.User;
-import org.example.data.UserDao;
+package org.example.data;
+
+import org.example.TestBase;
+import org.example.TestException;
 import org.example.util.Expected;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -49,7 +51,7 @@ public class UserDaoTests extends TestBase {
 
     @Override
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         try(Connection connection = getDbConnection();
                 Statement statement = connection.createStatement()) {

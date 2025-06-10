@@ -1,3 +1,5 @@
+package org.example;
+
 import org.example.util.LogUtility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,13 +24,13 @@ public class TestBase {
     MockedStatic<LogUtility> logUtilityMock;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         logUtilityMock = mockStatic(LogUtility.class);
         logUtilityMock.when(LogUtility::getStaticLogger).thenReturn(this.logger);
     }
 
     @AfterEach
-    void afterEach() {
+    protected void afterEach() {
         logUtilityMock.close();
     }
 }

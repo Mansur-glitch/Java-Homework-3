@@ -1,6 +1,5 @@
-import org.example.util.ErrorBase;
-import org.example.util.Expected;
-import org.example.util.SimpleMenu;
+package org.example.util;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,7 @@
+package org.example.state;
+
 import org.example.data.User;
 import org.example.data.UserDao;
-import org.example.state.CliState;
-import org.example.state.CreationState;
-import org.example.state.MainMenuState;
 import org.example.util.Expected;
 import org.example.util.InputVerifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,13 +14,13 @@ import static org.example.util.InputVerifier.Error.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class CreationStateTests extends StateTestBase  { ;
+public class CreationStateTests extends StateTestBase { ;
     CreationState state;
     Field blankField;
 
     @Override
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         state = new CreationState(contextMock);
         try {

@@ -1,4 +1,7 @@
+package org.example.state;
+
 import org.example.CliContext;
+import org.example.TestBase;
 import org.example.data.UserDao;
 import org.example.util.InputVerifier;
 import org.junit.jupiter.api.AfterEach;
@@ -14,7 +17,7 @@ public class StateTestBase extends TestBase {
 
     @Override
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         inputVerifierMock = mockStatic(InputVerifier.class);
 
@@ -25,7 +28,7 @@ public class StateTestBase extends TestBase {
 
     @Override
     @AfterEach
-    void afterEach() {
+    protected void afterEach() {
         super.afterEach();
         inputVerifierMock.close();
     }

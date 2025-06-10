@@ -1,8 +1,7 @@
+package org.example.state;
+
 import org.example.data.User;
 import org.example.data.UserDao;
-import org.example.state.CliState;
-import org.example.state.DeletionState;
-import org.example.state.MainMenuState;
 import org.example.util.Expected;
 import org.example.util.InputVerifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,14 +12,14 @@ import static org.example.util.InputVerifier.Error.NOT_INTEGER_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 
 public class DeletionStateTests extends StateTestBase {
     DeletionState state;
 
+    @Override
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         state = new DeletionState(contextMock);
     }
